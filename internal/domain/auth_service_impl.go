@@ -2,13 +2,14 @@ package domain
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
 type AuthServiceImpl struct {
-	secretKey string
+	secretKey []byte
 }
 
 type Claims struct {
@@ -18,11 +19,12 @@ type Claims struct {
 
 func NewAuthServiceImpl(secretKey string) *AuthServiceImpl {
 	return &AuthServiceImpl{
-		secretKey: secretKey,
+		secretKey: []byte(secretKey),
 	}
 }
 
-func (s *AuthServiceImpl) ValidateToken(tokenString string) (userID string, err error) {
+func (s *AuthServiceImpl) ValidateToken(tokenString string) (*UserPayload, error) {
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Asegúrate de que el algoritmo de token es lo que esperas
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -30,24 +32,29 @@ func (s *AuthServiceImpl) ValidateToken(tokenString string) (userID string, err 
 		}
 
 		// Retorna tu clave secreta
-		return []byte(s.secretKey), nil
+		return s.secretKey, nil
 	})
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// Puedes acceder a los claims del token aquí, por ejemplo:
-		userID, ok := claims["sub"].(string)
-		if !ok {
-			return "", fmt.Errorf("error getting userID from token")
+		userPayload := &UserPayload{
+			ID:             claims["ID"].(string),
+			Provider:       claims["provider"].(string),
+			ProviderUserID: claims["provider_user_id"].(string),
+			UserFullname:   claims["user_fullname"].(string),
+			Email:          claims["email"].(string),
+			AccessToken:    claims["access_token"].(string),
+			RefreshToken:   claims["refresh_token"].(string),
+			UserType:       claims["user_type"].(string),
 		}
 
-		return userID, nil
+		return userPayload, nil
 	}
 
-	return "", fmt.Errorf("invalid token")
+	return nil, fmt.Errorf("invalid token")
 }
 
 func (s *AuthServiceImpl) GenerateTokens(userPayload UserPayload) (string, string, error) {

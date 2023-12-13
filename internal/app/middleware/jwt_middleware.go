@@ -24,14 +24,14 @@ func (m *JWTMiddleware) ValidateJWT(c *fiber.Ctx) error {
 		})
 	}
 
-	userID, err := m.authService.ValidateToken(tokenString)
+	user, err := m.authService.ValidateToken(tokenString)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
 		})
 	}
 
-	c.Locals("userID", userID)
+	c.Locals("user", user)
 
 	return c.Next()
 }

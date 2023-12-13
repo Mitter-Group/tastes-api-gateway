@@ -54,16 +54,16 @@ func (s *HTTPUserService) Login(requestBody domain.LoginUserServiceRequest) (dom
 	return loginResponse, nil
 }
 
-func (s *HTTPUserService) Callback(requestBody domain.LoginCallbackParams) (domain.CallbackResponse, error) {
+func (s *HTTPUserService) Callback(requestBody domain.LoginCallbackParams) (domain.UserPayload, error) {
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		fmt.Println("Error marshalling JSON:", err)
-		return domain.CallbackResponse{}, err
+		return domain.UserPayload{}, err
 	}
 
 	resp, err := http.Post(s.userServiceURL+"/callback", "application/json", bytes.NewBuffer(requestJSON))
 	if err != nil {
-		return domain.CallbackResponse{}, err
+		return domain.UserPayload{}, err
 	}
 	defer resp.Body.Close()
 
@@ -73,14 +73,38 @@ func (s *HTTPUserService) Callback(requestBody domain.LoginCallbackParams) (doma
 			log.Fatal(err)
 		}
 		bodyString := string(bodyBytes)
-		return domain.CallbackResponse{}, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, bodyString)
+		return domain.UserPayload{}, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, bodyString)
 	}
 
-	var callbackResponse domain.CallbackResponse
+	var userPayload domain.UserPayload
 
-	if err := json.NewDecoder(resp.Body).Decode(&callbackResponse); err != nil {
-		return domain.CallbackResponse{}, err
+	if err := json.NewDecoder(resp.Body).Decode(&userPayload); err != nil {
+		return domain.UserPayload{}, err
 	}
 
-	return callbackResponse, nil
+	return userPayload, nil
+}
+
+func (s *HTTPUserService) DataInfo(params domain.DataInfoParams) (domain.DataInfoResponse, error) {
+
+	url := fmt.Sprintf("%s/%s/%s/%s", s.userServiceURL, params.Provider, params.DataType, params.UserID)
+	resp, err := http.Get(url)
+	if err != nil {
+		return domain.DataInfoResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		bodyString := string(bodyBytes)
+		return domain.DataInfoResponse{}, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, bodyString)
+	}
+	var dataInfoResponse domain.DataInfoResponse
+	if err := json.NewDecoder(resp.Body).Decode(&dataInfoResponse); err != nil {
+		return domain.DataInfoResponse{}, err
+	}
+	return dataInfoResponse, nil
 }

@@ -25,7 +25,18 @@ type CallbackResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type DataInfoParams struct {
+	Provider string `json:"provider"`
+	DataType string `json:"dataType"`
+	UserID   string `json:"userId"`
+}
+
 type UserService interface {
 	Login(requestBody LoginUserServiceRequest) (LoginUserServiceResponse, error)
-	Callback(params LoginCallbackParams) (CallbackResponse, error)
+	Callback(params LoginCallbackParams) (UserPayload, error)
+	DataInfo(params DataInfoParams) (DataInfoResponse, error)
 }
