@@ -84,6 +84,7 @@ func (h *UserHandler) Callback(c *fiber.Ctx) error {
 		})
 	}
 	return c.JSON(fiber.Map{
+		"id":            callbackResponse.ID,
 		"token":         token,
 		"refresh_token": refresh_token,
 	})

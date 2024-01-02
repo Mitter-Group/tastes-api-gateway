@@ -17,7 +17,4 @@ type UserPayload struct {
 	ProviderUserID string `json:"provider_user_id" dynamodbav:"ProviderUserID"`
 	UserFullname   string `json:"user_fullname" dynamodbav:"UserFullname"`
 	Email          string `json:"email" dynamodbav:"Email"`
-	AccessToken    string `json:"access_token" dynamodbav:"AccessToken"`
-	RefreshToken   string `json:"refresh_token" dynamodbav:"RefreshToken"`
-	UserType       string `json:"user_type"`
 }

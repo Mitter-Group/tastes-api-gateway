@@ -46,9 +46,6 @@ func (s *AuthServiceImpl) ValidateToken(tokenString string) (*UserPayload, error
 			ProviderUserID: claims["provider_user_id"].(string),
 			UserFullname:   claims["user_fullname"].(string),
 			Email:          claims["email"].(string),
-			AccessToken:    claims["access_token"].(string),
-			RefreshToken:   claims["refresh_token"].(string),
-			UserType:       claims["user_type"].(string),
 		}
 
 		return userPayload, nil
