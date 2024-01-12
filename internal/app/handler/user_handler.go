@@ -9,12 +9,14 @@ import (
 type UserHandler struct {
 	userService domain.UserService
 	authService domain.AuthService
+	//	producer 	*kafka.Producer
 }
 
 func NewUserHandler(userService domain.UserService, authService domain.AuthService) *UserHandler {
 	return &UserHandler{
 		userService: userService,
 		authService: authService,
+		//	producer: producer,
 	}
 }
 

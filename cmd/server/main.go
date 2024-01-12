@@ -16,13 +16,18 @@ import (
 	// "github.com/chunnior/api-gateway/internal/repository"
 	// "github.com/chunnior/api-gateway/internal/usecase"
 	"github.com/chunnior/api-gateway/pkg/infrastructure"
+	"github.com/chunnior/api-gateway/pkg/infrastructure/logger"
 )
 
 func main() {
-	// Load environment variables
-	err := godotenv.Load()
+	logger, err := logger.NewZapLogger()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		panic(err)
+	}
+	// Load environment variables
+	err = godotenv.Load()
+	if err != nil {
+		logger.Error("Error loading .env file", "error", err)
 	}
 
 	// Create a new Fiber instance
@@ -30,6 +35,15 @@ func main() {
 
 	// Setup middleware
 	middleware.SetupMiddleware(app)
+
+	//
+	/*
+		producer, err := kafka.NewProducer(os.Getenv("KAFKA_HOST"))
+		if err != nil {
+			log.Fatalf("Error al crear el productor: %v", err)
+		}
+		defer producer.Close()
+	*/
 
 	// Inicializa el servicios
 	userService := infrastructure.NewHTTPUserService(os.Getenv("USER_SERVICE_URL"), &http.Client{})
@@ -39,7 +53,7 @@ func main() {
 	userHandler := handler.NewUserHandler(userService, authService)
 
 	// authService := domain.NewAuthServiceImpl(os.Getenv("JWT_SECRET_KEY"))
-	jwtMiddleware := middleware.NewJWTMiddleware(authService)
+	jwtMiddleware := middleware.NewJWTMiddleware(authService, logger)
 
 	// Setup routes
 	router.SetupRoutes(app, jwtMiddleware, userHandler)

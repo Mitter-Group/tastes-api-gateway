@@ -2,6 +2,8 @@ package domain
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,7 +32,6 @@ func (s *AuthServiceImpl) ValidateToken(tokenString string) (*UserPayload, error
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-
 		// Retorna tu clave secreta
 		return s.secretKey, nil
 	})
@@ -56,10 +57,11 @@ func (s *AuthServiceImpl) ValidateToken(tokenString string) (*UserPayload, error
 
 func (s *AuthServiceImpl) GenerateTokens(userPayload UserPayload) (string, string, error) {
 	// Generar Access Token
+	tokenExpirationTime := getEnvExpirationTime("TOKEN_EXPIRATION_MINUTES", 15) * time.Minute
 	accessTokenClaims := &Claims{
 		UserPayload: userPayload,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(15 * time.Minute).Unix(), // Expire at 15 minutes
+			ExpiresAt: time.Now().Add(tokenExpirationTime).Unix(), // Expire at 15 minutes
 		},
 	}
 
@@ -70,10 +72,11 @@ func (s *AuthServiceImpl) GenerateTokens(userPayload UserPayload) (string, strin
 	}
 
 	// Generar Refresh Token
+	refreshTokenExpirationTime := getEnvExpirationTime("REFRESH_TOKEN_EXPIRATION_HOURS", 168) * time.Hour // Expire at 7 days = 168 hours
 	refreshTokenClaims := &Claims{
 		UserPayload: userPayload,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(24 * 7 * time.Hour).Unix(), // Expire at 7 days
+			ExpiresAt: time.Now().Add(refreshTokenExpirationTime).Unix(),
 		},
 	}
 
@@ -84,4 +87,13 @@ func (s *AuthServiceImpl) GenerateTokens(userPayload UserPayload) (string, strin
 	}
 
 	return accessTokenString, refreshTokenString, nil
+}
+
+func getEnvExpirationTime(key string, defaultValue int) time.Duration {
+	expirationTimeStr := os.Getenv(key)
+	tokenExpiration, err := strconv.Atoi(expirationTimeStr)
+	if err != nil {
+		tokenExpiration = defaultValue
+	}
+	return time.Duration(tokenExpiration)
 }

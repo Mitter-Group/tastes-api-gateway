@@ -7,11 +7,13 @@ import (
 
 type JWTMiddleware struct {
 	authService domain.AuthService
+	logger      domain.Logger
 }
 
-func NewJWTMiddleware(authService domain.AuthService) *JWTMiddleware {
+func NewJWTMiddleware(authService domain.AuthService, logger domain.Logger) *JWTMiddleware {
 	return &JWTMiddleware{
 		authService: authService,
+		logger:      logger,
 	}
 }
 
@@ -19,6 +21,7 @@ func (m *JWTMiddleware) ValidateJWT(c *fiber.Ctx) error {
 	tokenString := c.Get("Authorization")
 
 	if tokenString == "" {
+		m.logger.Error("Authorization token missing")
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Authorization token missing",
 		})
@@ -26,6 +29,7 @@ func (m *JWTMiddleware) ValidateJWT(c *fiber.Ctx) error {
 
 	user, err := m.authService.ValidateToken(tokenString)
 	if err != nil {
+		m.logger.Error("Unauthorized", "error", err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
 		})
