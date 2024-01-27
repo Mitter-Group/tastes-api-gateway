@@ -81,8 +81,13 @@ func (s *HTTPUserService) Callback(requestBody domain.LoginCallbackParams) (doma
 		fmt.Println("Error marshalling JSON:", err)
 		return domain.UserPayload{}, err
 	}
+	req, err := http.NewRequest("POST", s.userServiceURL+"/login", bytes.NewBuffer(requestJSON))
+	if err != nil {
+		return domain.UserPayload{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.Post(s.userServiceURL+"/callback", "application/json", bytes.NewBuffer(requestJSON))
+	resp, err := s.sendRequest(req)
 	if err != nil {
 		return domain.UserPayload{}, err
 	}
