@@ -36,6 +36,15 @@ func main() {
 	// Setup middleware
 	middleware.SetupMiddleware(app)
 
+	// pemFileName := "public_key.pem"
+
+	// // Leer la clave pública desde el archivo PEM
+	// publicKey, err := utils.ReadPublicKeyFromFile(pemFileName)
+	// if err != nil {
+	// 	fmt.Println("Error al leer la clave pública desde el archivo PEM:", err)
+	// 	return
+	// }
+
 	//
 	/*
 		producer, err := kafka.NewProducer(os.Getenv("KAFKA_HOST"))
@@ -46,7 +55,7 @@ func main() {
 	*/
 
 	// Inicializa el servicios
-	userService := infrastructure.NewHTTPUserService(os.Getenv("USER_SERVICE_URL"), &http.Client{})
+	userService := infrastructure.NewHTTPUserService(os.Getenv("USER_SERVICE_URL"), &http.Client{}, os.Getenv("API_KEY"))
 	authService := domain.NewAuthServiceImpl(os.Getenv("JWT_SECRET_KEY"))
 
 	// Initialize handlers

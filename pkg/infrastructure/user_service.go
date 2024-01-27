@@ -15,13 +15,28 @@ import (
 type HTTPUserService struct {
 	userServiceURL string
 	httpClient     *http.Client
+	apiKey         string
 }
 
-func NewHTTPUserService(userServiceURL string, httpClient *http.Client) *HTTPUserService {
+func NewHTTPUserService(userServiceURL string, httpClient *http.Client, apiKey string) *HTTPUserService {
 	return &HTTPUserService{
 		userServiceURL: userServiceURL,
 		httpClient:     httpClient,
+		apiKey:         apiKey,
 	}
+}
+
+func (s *HTTPUserService) sendRequest(req *http.Request) (*http.Response, error) {
+	// Agrega el encabezado X-API-Key a la solicitud
+	req.Header.Add("X-API-Key", s.apiKey)
+
+	// Envía la solicitud
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (s *HTTPUserService) Login(requestBody domain.LoginUserServiceRequest) (domain.LoginUserServiceResponse, error) {
@@ -30,7 +45,13 @@ func (s *HTTPUserService) Login(requestBody domain.LoginUserServiceRequest) (dom
 		fmt.Println("Error marshalling JSON:", err)
 		return domain.LoginUserServiceResponse{}, err
 	}
-	resp, err := http.Post(s.userServiceURL+"/login", "application/json", bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequest("POST", s.userServiceURL+"/login", bytes.NewBuffer(requestJSON))
+	if err != nil {
+		return domain.LoginUserServiceResponse{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.sendRequest(req)
 	if err != nil {
 		return domain.LoginUserServiceResponse{}, err
 	}
