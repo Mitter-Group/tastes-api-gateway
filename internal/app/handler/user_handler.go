@@ -135,10 +135,16 @@ func (h *UserHandler) HandleDataInfo(c *fiber.Ctx) error {
 		})
 	}
 	userPayload := c.Locals("user").(*domain.UserPayload)
+	providerData, found := GetProviderUserData(provider, userPayload.Providers)
+	if !found {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Provider not associated to user",
+		})
+	}
 	params := domain.DataInfoParams{
 		Provider: provider,
 		DataType: dataType,
-		UserID:   userPayload.ProviderUserID,
+		UserID:   providerData.ProviderUserID,
 	}
 	dataInfoResponse, err := h.userService.DataInfo(params)
 	if err != nil {
@@ -148,4 +154,13 @@ func (h *UserHandler) HandleDataInfo(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(dataInfoResponse)
+}
+
+func GetProviderUserData(provider string, providerDataList []domain.ProviderData) (*domain.ProviderData, bool) {
+	for i, pd := range providerDataList {
+		if pd.Provider == provider {
+			return &providerDataList[i], true
+		}
+	}
+	return nil, false
 }

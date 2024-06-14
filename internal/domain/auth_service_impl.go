@@ -43,9 +43,8 @@ func (s *AuthServiceImpl) ValidateToken(tokenString string) (*UserPayload, error
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		userPayload := &UserPayload{
 			ID:             claims["ID"].(string),
-			Provider:       claims["provider"].(string),
-			ProviderUserID: claims["provider_user_id"].(string),
 			UserFullname:   claims["user_fullname"].(string),
+			ProfilePicture: claims["profile_picture"].(string),
 			Email:          claims["email"].(string),
 		}
 
