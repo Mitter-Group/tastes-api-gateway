@@ -10,7 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    environment: ${{ github.ref_name }}  # Selecciona el environment basado en la rama
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'develop' }}
 
     steps:
       - name: Check out the code
@@ -23,7 +24,7 @@ jobs:
 
       - name: Build the Docker image
         run: |
-          docker build -t my-api-gateway:latest .
+          docker build -t tastes-api-gateway:latest .
       - name: Log in to Amazon ECR
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
