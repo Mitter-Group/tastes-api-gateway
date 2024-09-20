@@ -34,7 +34,7 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 340544373363.dkr.ecr.us-west-1.amazonaws.com
       - name: Tag Docker image for ECR
         run: |
-          docker tag my-api-gateway:latest 340544373363.dkr.ecr.us-west-1.amazonaws.com/tastes-api-gateway
+          docker tag tastes-api-gateway:latest 340544373363.dkr.ecr.us-west-1.amazonaws.com/tastes-api-gateway
       - name: Push Docker image to ECR
         run: |
           docker push 340544373363.dkr.ecr.us-west-1.amazonaws.com/tastes-api-gateway
