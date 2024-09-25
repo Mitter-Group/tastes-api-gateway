@@ -26,7 +26,7 @@ func main() {
 	}
 	// Load environment variables
 	err = godotenv.Load()
-	if err != nil {
+	if err != nil && os.Getenv("ENV") != "production" {
 		logger.Error("Error loading .env file", "error", err)
 	}
 
