@@ -59,13 +59,14 @@ func main() {
 	authService := domain.NewAuthServiceImpl(os.Getenv("JWT_SECRET_KEY"))
 
 	// Initialize handlers
+	healthHandler := handler.NewHealthHandler()
 	userHandler := handler.NewUserHandler(userService, authService)
 
 	// authService := domain.NewAuthServiceImpl(os.Getenv("JWT_SECRET_KEY"))
 	jwtMiddleware := middleware.NewJWTMiddleware(authService, logger)
 
 	// Setup routes
-	router.SetupRoutes(app, jwtMiddleware, userHandler)
+	router.SetupRoutes(app, jwtMiddleware, userHandler, healthHandler)
 
 	// Start the server
 	log.Fatal(app.Listen(":" + os.Getenv("PORT")))

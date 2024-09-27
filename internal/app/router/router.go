@@ -6,7 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRoutes(app *fiber.App, jwtMiddleware *middleware.JWTMiddleware, userHandler *handler.UserHandler) {
+func SetupRoutes(app *fiber.App, jwtMiddleware *middleware.JWTMiddleware, userHandler *handler.UserHandler, healthHandler *handler.HealthHandler) {
+	app.Get("/health", healthHandler.HealthCheckHandler)
 	api := app.Group("/api")
 
 	usersRoutes := api.Group("/users")
